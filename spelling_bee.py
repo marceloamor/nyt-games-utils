@@ -5,7 +5,6 @@
 """
 
 
-
 class SpellingBeeSolver:
     def __init__(self, dictionary_file):
         self.english_dict = self.load_dictionary(dictionary_file)
@@ -18,7 +17,9 @@ class SpellingBeeSolver:
 
     def input_letters(self):
         while True:
-            letters = input("Input the available letters, capitalise the center letter: \n")
+            letters = input(
+                "Input the available letters, capitalise the center letter: \n"
+            )
             self.letters = set(letters.replace(" ", "").lower())
             self.center_letter = ""
 

@@ -23,8 +23,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 
-nlp = spacy.load('en_core_web_md') 
-  
+nlp = spacy.load("en_core_web_md")
+
 ydays_words = [
     "lady",
     "perfect",
@@ -84,34 +84,36 @@ todays_words = [
 
 
 def calc_semantic_distance(word1, word2):
-    words = " ".join([word1, word2]) 
-    
-    tokens = nlp(words) 
-    
-    for token in tokens: 
-        # Printing the following attributes of each token. 
+    words = " ".join([word1, word2])
+
+    tokens = nlp(words)
+
+    for token in tokens:
+        # Printing the following attributes of each token.
         # text: the word string
         # has_vector: if it contains a vector representation in the model
         # vector_norm: the algebraic norm of the vector
         # is_oov: if the word is out of vocabulary
-        print(token.text, token.has_vector, token.vector_norm, token.is_oov) 
-    
-    token1, token2 = tokens[0], tokens[1] 
-    
-    print("Similarity:", token1.similarity(token2)) 
+        print(token.text, token.has_vector, token.vector_norm, token.is_oov)
+
+    token1, token2 = tokens[0], tokens[1]
+
+    print("Similarity:", token1.similarity(token2))
     return token1.similarity(token2)
+
 
 def calc_distance_matrix(todays_words):
     distance_matrix = np.zeros((len(todays_words), len(todays_words)))
 
     # calc semantic differences for each pair of words
     for i in range(len(todays_words)):
-        for j in range(i+1, len(todays_words)):
+        for j in range(i + 1, len(todays_words)):
             semantic_distance = calc_semantic_distance(todays_words[i], todays_words[j])
             distance_matrix[i][j] = semantic_distance
             distance_matrix[j][i] = semantic_distance
     print(distance_matrix)
     return distance_matrix
+
 
 def calc_clusters_kmeans(words, distance_matrix):
     num_clusters = 4
@@ -126,8 +128,10 @@ def calc_clusters_kmeans(words, distance_matrix):
     # Group the words based on cluster labels
     word_groups = {}
     for i in range(num_clusters):
-        word_groups[i] = [words[j] for j, label in enumerate(cluster_labels) if label == i]
-    
+        word_groups[i] = [
+            words[j] for j, label in enumerate(cluster_labels) if label == i
+        ]
+
     print(word_groups)
     return word_groups
 
@@ -142,8 +146,19 @@ def adjust_clusters(initial_clusters, distance_matrix):
     def calculate_wcss(clusters):
         wcss = 0
         for cluster in clusters:
-            cluster_center = np.mean([calc_semantic_distance(word1, word2) for word1 in cluster for word2 in cluster])
-            wcss += sum([(calc_semantic_distance(word, cluster_center) ** 2) for word in cluster])
+            cluster_center = np.mean(
+                [
+                    calc_semantic_distance(word1, word2)
+                    for word1 in cluster
+                    for word2 in cluster
+                ]
+            )
+            wcss += sum(
+                [
+                    (calc_semantic_distance(word, cluster_center) ** 2)
+                    for word in cluster
+                ]
+            )
         return wcss
 
     # Continue swapping words to minimize the WCSS
@@ -175,10 +190,8 @@ def adjust_clusters(initial_clusters, distance_matrix):
         # If no swaps were made, exit the loop
         if not swapped:
             break
-    
+
     return adjusted_clusters
-
-
 
 
 # no reclustering, leads to uneven groups
@@ -209,4 +222,4 @@ if __name__ == "__main__":
     solve1()
 
     # reclustering
-    #solve2()
+    # solve2()

@@ -10,7 +10,9 @@ with open("english_dict.txt") as f:
 
 def input_letters():
     while True:
-        letters = input("Input the available letters, with a hyphen between sides, ie. ABC-DEF-GHI-JKL: \n")
+        letters = input(
+            "Input the available letters, with a hyphen between sides, ie. ABC-DEF-GHI-JKL: \n"
+        )
         # format input
         letters = letters.replace(" ", "").lower()
 
@@ -26,7 +28,6 @@ def input_letters():
 
         if len(letters) == 12:
             break
-
 
     return letters
 
@@ -62,6 +63,6 @@ def solve():
 
 
 if __name__ == "__main__":
-    #solve()
+    # solve()
     letters = input_letters()
     filter_dictionary(letters)
