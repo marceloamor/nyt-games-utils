@@ -4,54 +4,54 @@
 - return possible list of words, sorted by length and alphabetically
 """
 
-with open("english_dict.txt") as f:
-    english_dict = set(f.read().split("\n"))
 
 
-def input_letters():
-    while True:
-        letters = input("Input the available letters, capitalise the center letter: \n")
-        # strip spaces and non alpha characters
+class SpellingBeeSolver:
+    def __init__(self, dictionary_file):
+        self.english_dict = self.load_dictionary(dictionary_file)
+        self.letters = set()
+        self.center_letter = ""
 
-        center_letter = ""
+    def load_dictionary(self, dictionary_file):
+        with open(dictionary_file) as f:
+            return set(f.read().split("\n"))
 
-        for letter in letters:
-            if letter.isupper():
-                center_letter = letter.lower()
+    def input_letters(self):
+        while True:
+            letters = input("Input the available letters, capitalise the center letter: \n")
+            self.letters = set(letters.replace(" ", "").lower())
+            self.center_letter = ""
 
-        letters = set(letters.replace(" ", "").lower())
+            for letter in letters:
+                if letter.isupper():
+                    self.center_letter = letter.lower()
 
-        if len(letters) == 7 and len(center_letter) == 1:
-            break
+            if len(self.letters) == 7 and len(self.center_letter) == 1:
+                break
 
-    return (letters, center_letter)
+    def filter_dictionary(self):
+        poss_words = []
 
+        for word in self.english_dict:
+            if self.center_letter not in word:
+                continue
+            if len(word) < 4:
+                continue
+            if not set(word).issubset(self.letters):
+                continue
+            poss_words.append(word)
 
-def filter_dictionary(letters, center_letter):
-    poss_words = []
+        return poss_words
 
-    for word in english_dict:
-        if center_letter not in word:
-            continue
-        if len(word) < 4:
-            continue
-        if not set(word).issubset(letters):
-            continue
-        poss_words.append(word)
-
-    return poss_words  # .sort(key=len)
-
-
-def solve():
-    letters, center_letter = input_letters()
-
-    poss_words = filter_dictionary(letters, center_letter)
-    print("Possible Words:")
-    # double sort for alpha and len sort cause why not
-    for word in sorted(sorted(poss_words), key=len):
-        print(word)
-    print(f"Number of possible words: {len(poss_words)}")
+    def solve(self):
+        self.input_letters()
+        poss_words = self.filter_dictionary()
+        print("Possible Words:")
+        for word in sorted(sorted(poss_words), key=len):
+            print(word)
+        print(f"Number of possible words: {len(poss_words)}")
 
 
 if __name__ == "__main__":
-    solve()
+    solver = SpellingBeeSolver("english_dict.txt")
+    solver.solve()
