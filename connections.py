@@ -25,7 +25,7 @@ from sklearn.cluster import KMeans
 
 nlp = spacy.load('en_core_web_md') 
   
-todays_words = [
+ydays_words = [
     "lady",
     "perfect",
     "goodness",
@@ -44,22 +44,61 @@ todays_words = [
     "past",
 ]
 
+todays_words2 = [
+    "aces",
+    "globe",
+    "head",
+    "grow",
+    "bubble",
+    "swell",
+    "neato",
+    "lather",
+    "nifty",
+    "marble",
+    "foam",
+    "mount",
+    "froth",
+    "build",
+    "pearl",
+    "keen",
+]
+
+todays_words = [
+    "mini",
+    "mouse",
+    "alone",
+    "knock",
+    "ram",
+    "lily",
+    "slam",
+    "bachelor",
+    "pan",
+    "chopped",
+    "jaguar",
+    "catfish",
+    "maxi",
+    "survivor",
+    "roast",
+    "fiat",
+]
+
+
 def calc_semantic_distance(word1, word2):
     words = " ".join([word1, word2]) 
     
     tokens = nlp(words) 
     
-    # for token in tokens: 
-    #     # Printing the following attributes of each token. 
-    #     # text: the word string
-    #     # has_vector: if it contains a vector representation in the model
-    #     # vector_norm: the algebraic norm of the vector
-    #     # is_oov: if the word is out of vocabulary
-    #     print(token.text, token.has_vector, token.vector_norm, token.is_oov) 
+    for token in tokens: 
+        # Printing the following attributes of each token. 
+        # text: the word string
+        # has_vector: if it contains a vector representation in the model
+        # vector_norm: the algebraic norm of the vector
+        # is_oov: if the word is out of vocabulary
+        print(token.text, token.has_vector, token.vector_norm, token.is_oov) 
     
     token1, token2 = tokens[0], tokens[1] 
     
-    #print("Similarity:", token1.similarity(token2)) 
+    print("Similarity:", token1.similarity(token2)) 
     return token1.similarity(token2)
 
 def calc_distance_matrix(todays_words):
@@ -167,7 +206,7 @@ def solve2():
 
 if __name__ == "__main__":
     # no reclustering
-    #solve1()
+    solve1()
 
     # reclustering
-    solve2()
+    #solve2()
