@@ -9,9 +9,6 @@ alright lets do some planning here before we start coding
 5. repeat steps 2-4 until the word is guessed
 6. profit
 
-
-
-
 """
 
 letter_counts = {
@@ -96,7 +93,7 @@ class WordleSolver:
             feedback = input(
                 f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey): "
             )
-            self.process_feedback("crane", feedback)
+            self.process_feedback(guess, feedback)
         else:
             guess = self.make_guess()
             print(f"My guess #{guess_num} would be: {guess}")
