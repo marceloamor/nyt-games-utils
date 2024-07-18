@@ -54,5 +54,5 @@ class SpellingBeeSolver:
 
 
 if __name__ == "__main__":
-    solver = SpellingBeeSolver("english_dict.txt")
+    solver = SpellingBeeSolver("src/dictionaries/english_dict.txt")
     solver.solve()

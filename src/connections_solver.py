@@ -1,51 +1,46 @@
-""" -LETTERBOXED SOLVER-
-
-Rules:
-1. The word must be at least 3 letters long
-2. Consecutive letters must not be from the same side
-3. The last letter of a word becomes the first in the next word
-4. 
+""" -NYT CONNECTIONS SOLVER-
 
 alright lets do some planning here before we start coding
 
--create a Side class containing the letters of the side
-
-
-
-solving ideas:
-- immediately eliminate words that contain the same letter twice or is not a subset of all the given letters
-- maybe also eliminate words that contain two letters from the same side consecutively  
-    - do these two with a __word_is_valid__(word) method
-        - checks word length
-        - checks word is a subset of the given letters
-        - checks for consecutive letters from the same side
 
 """
+import spacy
+import numpy as np
+from sklearn.cluster import KMeans
+import requests
+from icecream import ic
+from datetime import datetime
+
+nlp = spacy.load("en_core_web_md")
 
 
-class LetterboxedSolver:
+class ConnectionsSolver:
     def __init__(self, dictionary_file):
         self.dictionary = self.load_dictionary(dictionary_file)
-        self.possible_words = self.dictionary.copy()
+        self.todays_words = self.request_todays_words()
 
     def load_dictionary(self, dictionary_file):
         with open(dictionary_file) as f:
             return [word.strip() for word in f if len(word.strip()) == 5]
 
-    def make_guess(self):
-        # rank words based on letter frequency
-        # count repeated letters once only
-        best_guess = ""
-        best_score = 0
-        if self.possible_words:
-            for word in self.possible_words:
-                score = sum(letter_counts[letter] for letter in set(word))
-                if score > best_score:
-                    best_score = score
-                    best_guess = word
+    def request_todays_words(self):
+        today = datetime.today().strftime("%Y-%m-%d")
+        response = requests.get(
+            f"https://www.nytimes.com/svc/connections/v1/{today}.json"
+        )
+        response.raise_for_status()
+        word_collection = response.json()["startingGroups"]
+        words = [word.lower() for array in word_collection for word in array]
+        return words
+    
 
-            return best_guess
-        return None
+
+
+
+
+
+
+    ##################
 
     def process_feedback(self, guess, feedback):
         self.possible_words = self.filter_words(guess, feedback)
@@ -97,5 +92,5 @@ class LetterboxedSolver:
 
 
 if __name__ == "__main__":
-    solver = LetterboxedSolver("src/dictionaries/english_dict.txt")
-    solver.solve()
+    solver = ConnectionsSolver("src/dictionaries/english_dict.txt")
+    solver.request_todays_words()

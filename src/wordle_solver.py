@@ -115,5 +115,5 @@ class WordleSolver:
 
 
 if __name__ == "__main__":
-    solver = WordleSolver("wordle_words.txt")
+    solver = WordleSolver("src/dictionaries/wordle_words.txt")
     solver.solve()
