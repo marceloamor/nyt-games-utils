@@ -73,8 +73,7 @@ class WordleSolver:
     
     def interface(self, guess_num):
         if guess_num == 1:
-            guess = "crane"
-            print("As usual, I propose starting with 'crane'")
+            guess = input("As usual, I propose starting with 'crane', but what is your first guess?")
             feedback = input(f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey): ")
             self.process_feedback("crane", feedback)
         else:
@@ -87,11 +86,11 @@ class WordleSolver:
     
     def solve(self):
         for i in range(1, 6):
-            guess = self.interface(i)
-            if guess == None:
+            next_guess = self.interface(i)
+            if next_guess == None:
                 print("No more possible words")
                 break
-            if guess == "hello":
+            if next_guess == "hello":
                 print("I guessed the word!")
                 break
         
@@ -100,13 +99,3 @@ class WordleSolver:
 if __name__ == "__main__":
     solver = WordleSolver("wordle_words.txt")
     solver.solve()
-
-
-
-
-    # guess = solver.make_guess()
-    # print(f"First guess: {guess}")
-    # feedback = input("Enter feedback for the guess (G for green, Y for yellow, X for black/grey): ")
-    # solver.process_feedback(guess, feedback)
-    # print(f"Possible words after feedback: {solver.possible_words}")
-
