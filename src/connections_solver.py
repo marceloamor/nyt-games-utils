@@ -18,6 +18,8 @@ class ConnectionsSolver:
     def __init__(self, dictionary_file):
         self.dictionary = self.load_dictionary(dictionary_file)
         self.todays_words = self.request_todays_words()
+        self.semantic_distance_matrix = self.create_semantic_distance_matrix()
+        self.word_groups = self.calc_clusters_kmeans()
 
     def load_dictionary(self, dictionary_file):
         with open(dictionary_file) as f:
@@ -31,66 +33,115 @@ class ConnectionsSolver:
         response.raise_for_status()
         word_collection = response.json()["startingGroups"]
         words = [word.lower() for array in word_collection for word in array]
+        ic(words)
         return words
-    
 
+    def calculate_semantic_difference(self, word1, word2):
+        tokens = nlp(f"{word1} {word2}")
 
+        token1, token2 = tokens[0], tokens[1]
+        return token1.similarity(token2)
 
+    def create_semantic_distance_matrix(self):
+        n = len(self.todays_words)
+        matrix = np.zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                matrix[i][j] = self.calculate_semantic_difference(
+                    self.todays_words[i], self.todays_words[j]
+                )
+        ic(matrix)
+        return matrix
 
+    def calc_most_likely_cluster(self):
+        # create a group of 4 words that minimise intra-group semantic distance
 
+        def calc_group_distance(group):
+            return sum(
+                [
+                    self.calculate_semantic_difference(word1, word2)
+                    for word1 in group
+                    for word2 in group
+                ]
+            )
 
+        def calc_most_likely_clusters_helper(words, groups):
+            if not words:
+                return groups
+            best_group = None
+            best_distance = float("inf")
+            for group in groups:
+                distance = calc_group_distance(group + [words[0]])
+                if distance < best_distance:
+                    best_distance = distance
+                    best_group = group
+            best_group.append(words[0])
+            return calc_most_likely_clusters_helper(words[1:], groups)
+
+        cluster = calc_most_likely_clusters_helper(
+            self.todays_words, [[] for _ in range(4)]
+        )
+        ic(cluster)
+        return cluster
+
+    def calc_clusters_kmeans(self):
+        num_clusters = 4
+        kmeans = KMeans(n_clusters=num_clusters)
+        kmeans.fit(self.semantic_distance_matrix)
+        cluster_labels = kmeans.labels_
+        word_groups = {}
+        for i in range(num_clusters):
+            word_groups[i] = [
+                self.todays_words[j]
+                for j, label in enumerate(cluster_labels)
+                if label == i
+            ]
+        ic(word_groups)
+        return word_groups
+
+    def adjust_clusters(self):
+        kmeans = KMeans(n_clusters=len(self.word_groups))
+        kmeans.fit(self.semantic_distance_matrix)
+        initial_wcss = kmeans.inertia_
+
+        def calculate_wcss(clusters):
+            wcss = 0
+            for cluster in clusters:
+                cluster_center = np.mean(
+                    [
+                        self.calculate_semantic_difference(word1, word2)
+                        for word1 in cluster
+                        for word2 in cluster
+                    ]
+                )
+                wcss += sum(
+                    [
+                        (self.calculate_semantic_difference(word, cluster_center)) ** 2
+                        for word in cluster
+                    ]
+                )
+            return wcss
+
+        def adjust_clusters_helper(clusters, wcss):
+            for i in range(len(clusters)):
+                for j in range(len(clusters)):
+                    if i != j:
+                        temp_clusters = clusters.copy()
+                        temp_clusters[j].append(temp_clusters[i].pop())
+                        temp_wcss = calculate_wcss(temp_clusters)
+                        if temp_wcss < wcss:
+                            return adjust_clusters_helper(temp_clusters, temp_wcss)
+            return clusters
+
+        new_clusters = adjust_clusters_helper(
+            list(self.word_groups.values()), initial_wcss
+        )
+        ic(new_clusters)
+        return new_clusters
 
     ##################
-
-    def process_feedback(self, guess, feedback):
-        self.possible_words = self.filter_words(guess, feedback)
-
-    def filter_words(self, guess, feedback):
-        filtered_words = []
-        for word in self.possible_words:
-            if self.is_valid_word(word, guess, feedback):
-                filtered_words.append(word)
-        return filtered_words
-
-    def is_valid_word(self, word, guess, feedback):
-        for i in range(5):
-            if feedback[i] == "G" and word[i] != guess[i]:
-                return False
-            if feedback[i] == "Y" and (word[i] == guess[i] or guess[i] not in word):
-                return False
-            if feedback[i] == "X" and guess[i] in word:
-                return False
-        return True
-
-    def interface(self, guess_num):
-        if guess_num == 1:
-            guess = input(
-                "As usual, I propose starting with 'crane', but what is your first guess?"
-            )
-            feedback = input(
-                f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey): "
-            )
-            self.process_feedback(guess, feedback)
-        else:
-            guess = self.make_guess()
-            print(f"My guess #{guess_num} would be: {guess}")
-            feedback = input(
-                "Enter feedback (G for green, Y for yellow, X for black/grey): "
-            )
-            self.process_feedback(guess, feedback)
-        return guess
-
-    def solve(self):
-        for i in range(1, 6):
-            next_guess = self.interface(i)
-            if next_guess == None:
-                print("No more possible words")
-                break
-            if next_guess == "hello":
-                print("I guessed the word!")
-                break
 
 
 if __name__ == "__main__":
     solver = ConnectionsSolver("src/dictionaries/english_dict.txt")
-    solver.request_todays_words()
+    solver.calc_most_likely_cluster()

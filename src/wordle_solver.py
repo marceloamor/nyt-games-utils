@@ -10,6 +10,7 @@ alright lets do some planning here before we start coding
 6. profit
 
 """
+import requests
 
 letter_counts = {
     "a": 906,
@@ -47,8 +48,18 @@ class WordleSolver:
         self.possible_words = self.dictionary.copy()
 
     def load_dictionary(self, dictionary_file):
-        with open(dictionary_file) as f:
-            return [word.strip() for word in f if len(word.strip()) == 5]
+        if dictionary_file == "mobile":
+            # pull dictionary from git repo to get around 1 file limit on mobile IDE
+            req = requests.get(
+                "https://raw.githubusercontent.com/marceloamor/nyt-games-utils/main/src/dictionaries/wordle_words.txt"
+            )
+            if req.status_code == 200:
+                content = req.text
+                words = content.splitlines()
+                return [word.strip() for word in words if len(word.strip()) == 5]
+        else:
+            with open(dictionary_file) as f:
+                return [word.strip() for word in f if len(word.strip()) == 5]
 
     def make_guess(self):
         # rank words based on letter frequency
@@ -88,7 +99,7 @@ class WordleSolver:
     def interface(self, guess_num):
         if guess_num == 1:
             guess = input(
-                "As usual, I propose starting with 'crane', but what is your first guess?"
+                "As usual, I propose starting with 'crane', but what is your first guess? "
             )
             feedback = input(
                 f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey): "
@@ -100,11 +111,13 @@ class WordleSolver:
             feedback = input(
                 "Enter feedback (G for green, Y for yellow, X for black/grey): "
             )
+            if feedback.lower() == "ggggg":
+                return "guessed it!"
             self.process_feedback(guess, feedback)
         return guess
 
     def solve(self):
-        for i in range(1, 6):
+        for i in range(1, 7):
             next_guess = self.interface(i)
             if next_guess == None:
                 print("No more possible words")
@@ -116,4 +129,5 @@ class WordleSolver:
 
 if __name__ == "__main__":
     solver = WordleSolver("src/dictionaries/wordle_words.txt")
+    # solver = WordleSolver("mobile")
     solver.solve()

@@ -118,11 +118,11 @@ def calc_distance_matrix(todays_words):
 def calc_clusters_kmeans(words, distance_matrix):
     num_clusters = 4
 
-    # Perform k-means clustering
+    # k-means clustering
     kmeans = KMeans(n_clusters=num_clusters)
     kmeans.fit(distance_matrix)
 
-    # Get the cluster labels for each word
+    # get cluster labels for each word
     cluster_labels = kmeans.labels_
 
     # Group the words based on cluster labels
