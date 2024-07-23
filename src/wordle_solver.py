@@ -97,23 +97,28 @@ class WordleSolver:
         return True
 
     def interface(self, guess_num):
+        def print_boxed_message(message):
+            print("╔" + "═" * (len(message) + 2) + "╗")
+            print("║ " + message + " ║")
+            print("╚" + "═" * (len(message) + 2) + "╝")
+
+        def print_boxed_input(prompt):
+            print("╭" + "─" * (len(prompt) + 2) + "╮")
+            response = input("│ " + prompt + " │\n╰" + "─" * (len(prompt) + 2) + "╯\n> ")
+            return response
+
         if guess_num == 1:
-            guess = input(
-                "As usual, I propose starting with 'crane', but what is your first guess? "
-            )
-            feedback = input(
-                f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey): "
-            )
+            guess = print_boxed_input("As usual, I propose starting with 'crane', but what is your first guess?")
+            feedback = print_boxed_input(f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey)")
             self.process_feedback(guess, feedback)
         else:
             guess = self.make_guess()
-            print(f"My guess #{guess_num} would be: {guess}")
-            feedback = input(
-                "Enter feedback (G for green, Y for yellow, X for black/grey): "
-            )
+            print_boxed_message(f"My guess #{guess_num} would be: {guess}")
+            feedback = print_boxed_input("Enter feedback (G for green, Y for yellow, X for black/grey)")
             if feedback.lower() == "ggggg":
                 return "guessed it!"
             self.process_feedback(guess, feedback)
+        
         return guess
 
     def solve(self):
