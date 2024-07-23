@@ -12,6 +12,14 @@ from icecream import ic
 from datetime import datetime
 
 nlp = spacy.load("en_core_web_md")
+#
+
+"""
+TODO:
+look into synset: https://www.nltk.org/howto/wordnet.html#similarity
+check under similarity, access to all synsets, see if this can be used to calculate semantic distance
+while taking into account the fact that the words could have multiple meanings or be used in different contexts/parts of speech
+"""
 
 
 class ConnectionsSolver:
@@ -35,13 +43,13 @@ class ConnectionsSolver:
         words = [word.lower() for array in word_collection for word in array]
         ic(words)
         return words
-
+    
     def calculate_semantic_difference(self, word1, word2):
         tokens = nlp(f"{word1} {word2}")
-
+        
         token1, token2 = tokens[0], tokens[1]
         return token1.similarity(token2)
-
+    
     def create_semantic_distance_matrix(self):
         n = len(self.todays_words)
         matrix = np.zeros((n, n))
@@ -52,7 +60,7 @@ class ConnectionsSolver:
                 )
         ic(matrix)
         return matrix
-
+    
     def calc_most_likely_cluster(self):
         # create a group of 4 words that minimise intra-group semantic distance
 
@@ -64,7 +72,7 @@ class ConnectionsSolver:
                     for word2 in group
                 ]
             )
-
+        
         def calc_most_likely_clusters_helper(words, groups):
             if not words:
                 return groups
@@ -77,13 +85,12 @@ class ConnectionsSolver:
                     best_group = group
             best_group.append(words[0])
             return calc_most_likely_clusters_helper(words[1:], groups)
-
-        cluster = calc_most_likely_clusters_helper(
-            self.todays_words, [[] for _ in range(4)]
-        )
+        
+        cluster = calc_most_likely_clusters_helper(self.todays_words, [[] for _ in range(4)])
         ic(cluster)
         return cluster
-
+    
+    
     def calc_clusters_kmeans(self):
         num_clusters = 4
         kmeans = KMeans(n_clusters=num_clusters)
@@ -98,12 +105,12 @@ class ConnectionsSolver:
             ]
         ic(word_groups)
         return word_groups
-
+    
     def adjust_clusters(self):
         kmeans = KMeans(n_clusters=len(self.word_groups))
         kmeans.fit(self.semantic_distance_matrix)
         initial_wcss = kmeans.inertia_
-
+        
         def calculate_wcss(clusters):
             wcss = 0
             for cluster in clusters:
@@ -121,7 +128,7 @@ class ConnectionsSolver:
                     ]
                 )
             return wcss
-
+        
         def adjust_clusters_helper(clusters, wcss):
             for i in range(len(clusters)):
                 for j in range(len(clusters)):
@@ -132,12 +139,16 @@ class ConnectionsSolver:
                         if temp_wcss < wcss:
                             return adjust_clusters_helper(temp_clusters, temp_wcss)
             return clusters
-
-        new_clusters = adjust_clusters_helper(
-            list(self.word_groups.values()), initial_wcss
-        )
+        
+        new_clusters = adjust_clusters_helper(list(self.word_groups.values()), initial_wcss)
         ic(new_clusters)
         return new_clusters
+
+
+
+
+
+
 
     ##################
 
