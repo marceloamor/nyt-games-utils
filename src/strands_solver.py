@@ -19,6 +19,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 
 
+
 class StrandsSolver:
     def __init__(self):
         self.letter_matrix = self.load_todays_matrix()
@@ -26,12 +27,8 @@ class StrandsSolver:
     def load_todays_matrix(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")  # Run in headless mode (no GUI)
-        options.add_argument(
-            "--no-sandbox"
-        )  # Add this option to avoid some potential issues
-        options.add_argument(
-            "--disable-dev-shm-usage"
-        )  # Add this option to avoid some potential issues
+        options.add_argument("--no-sandbox")  # Add this option to avoid some potential issues
+        options.add_argument("--disable-dev-shm-usage")  # Add this option to avoid some potential issues
 
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
@@ -50,8 +47,9 @@ class StrandsSolver:
         except Exception as e:
             print(e)
 
+
     def load_todays_matrix_old(self):
-        # pull dictionary from git repo to get around 1 file limit on mobile IDE
+            # pull dictionary from git repo to get around 1 file limit on mobile IDE
         response = requests.get("https://www.nytimes.com/games/strands")
         # get the divs in class 'UOpmtW_board' class
         # pull the letters from each div, with the class 'pRjvKq_item'
@@ -65,6 +63,7 @@ class StrandsSolver:
             print(board)
         return board
 
+
     def interface(self, guess_num):
         def print_boxed_message(message):
             print("╔" + "═" * (len(message) + 2) + "╗")
@@ -73,29 +72,21 @@ class StrandsSolver:
 
         def print_boxed_input(prompt):
             print("╭" + "─" * (len(prompt) + 2) + "╮")
-            response = input(
-                "│ " + prompt + " │\n╰" + "─" * (len(prompt) + 2) + "╯\n> "
-            )
+            response = input("│ " + prompt + " │\n╰" + "─" * (len(prompt) + 2) + "╯\n> ")
             return response
 
         if guess_num == 1:
-            guess = print_boxed_input(
-                "As usual, I propose starting with 'crane', but what is your first guess?"
-            )
-            feedback = print_boxed_input(
-                f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey)"
-            )
+            guess = print_boxed_input("As usual, I propose starting with 'crane', but what is your first guess?")
+            feedback = print_boxed_input(f"Enter feedback for {guess}. (G for green, Y for yellow, X for black/grey)")
             self.process_feedback(guess, feedback)
         else:
             guess = self.make_guess()
             print_boxed_message(f"My guess #{guess_num} would be: {guess}")
-            feedback = print_boxed_input(
-                "Enter feedback (G for green, Y for yellow, X for black/grey)"
-            )
+            feedback = print_boxed_input("Enter feedback (G for green, Y for yellow, X for black/grey)")
             if feedback.lower() == "ggggg":
                 return "guessed it!"
             self.process_feedback(guess, feedback)
-
+        
         return guess
 
     def solve(self):
