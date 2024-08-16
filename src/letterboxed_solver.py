@@ -22,50 +22,74 @@ solving ideas:
 
 """
 
+import requests
+from bs4 import BeautifulSoup
+import json
+import time
+
+from icecream import ic
+
 
 class LetterboxedSolver:
-    def __init__(self, dictionary_file):
-        self.dictionary = self.load_dictionary(dictionary_file)
-        self.possible_words = self.dictionary.copy()
+    def __init__(self, solve_mode: str):
+        (
+            self.letters,
+            self.poss_words,
+            self.par,
+            self.best_solution,
+        ) = self.fetch_todays_game_data()
+        self.solve_mode = solve_mode
 
     def load_dictionary(self, dictionary_file):
         with open(dictionary_file) as f:
             return [word.strip() for word in f if len(word.strip()) == 5]
 
-    def make_guess(self):
-        # rank words based on letter frequency
-        # count repeated letters once only
-        best_guess = ""
-        best_score = 0
-        if self.possible_words:
-            for word in self.possible_words:
-                score = sum(letter_counts[letter] for letter in set(word))
-                if score > best_score:
-                    best_score = score
-                    best_guess = word
+    def fetch_todays_game_data(self):
+        url = "https://www.nytimes.com/puzzles/letter-boxed"
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise Exception(f"Failed to load page {url}")
 
-            return best_guess
-        return None
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    def process_feedback(self, guess, feedback):
-        self.possible_words = self.filter_words(guess, feedback)
+        # Find the script tag containing the game data
+        script_tag = soup.find("script", text=lambda t: t and "window.gameData" in t)
+        if not script_tag:
+            raise Exception("Game data script tag not found")
 
-    def filter_words(self, guess, feedback):
-        filtered_words = []
-        for word in self.possible_words:
-            if self.is_valid_word(word, guess, feedback):
-                filtered_words.append(word)
-        return filtered_words
+        # Extract the JSON data from the script content
+        script_content = script_tag.string
+        json_data_start = script_content.find("window.gameData = ") + len(
+            "window.gameData = "
+        )
+        json_data_end = script_content.find(";", json_data_start)
+        json_data = script_content[json_data_start:json_data_end]
 
-    def is_valid_word(self, word, guess, feedback):
-        for i in range(5):
-            if feedback[i] == "G" and word[i] != guess[i]:
-                return False
-            if feedback[i] == "Y" and (word[i] == guess[i] or guess[i] not in word):
-                return False
-            if feedback[i] == "X" and guess[i] in word:
-                return False
-        return True
+        try:
+            game_data = json.loads(json_data + "}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e}")
+
+        todays_letters = game_data["sides"]
+        poss_words = game_data["dictionary"]
+        par = game_data["par"]
+        best_solution = game_data["ourSolution"]
+
+        return (todays_letters, poss_words, par, best_solution)
+
+    def cheat_interface(self):
+        print("Fetching today's game data...")
+        time.sleep(1)
+        print("Todays letters are: ", self.letters)
+        time.sleep(0.5)
+        print("Calculating optimal solution...")
+        time.sleep(1)
+        print("...")
+        time.sleep(1)
+        print(
+            f"The best solution is: {self.best_solution}, with a score of {len(self.best_solution)}, on a {self.par}-par puzzle"
+        )
 
     def interface(self, guess_num):
         if guess_num == 1:
@@ -97,5 +121,8 @@ class LetterboxedSolver:
 
 
 if __name__ == "__main__":
-    solver = LetterboxedSolver("src/dictionaries/english_dict.txt")
-    solver.solve()
+    solver = LetterboxedSolver("cheat_mode")
+    if solver.solve_mode == "cheat_mode":
+        solver.cheat_interface()
+    else:
+        print("Full throated attempt under construction...")
