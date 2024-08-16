@@ -87,8 +87,12 @@ class LetterboxedSolver:
         time.sleep(1)
         print("...")
         time.sleep(1)
+        print("...")
+        time.sleep(1)
+        print("...")
+        time.sleep(1)
         print(
-            f"The best solution is: {self.best_solution}, with a score of {len(self.best_solution)}, on a {self.par}-par puzzle"
+            f"The best solution is: {self.best_solution}, with a score of {len(self.best_solution)}, on a par-{self.par} puzzle"
         )
 
     def interface(self, guess_num):
