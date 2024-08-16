@@ -81,7 +81,12 @@ class LetterboxedSolver:
     def cheat_interface(self):
         print("Fetching today's game data...")
         time.sleep(1)
-        print("Todays letters are: ", self.letters)
+        print("Todays letters are:")
+        print(" " + (" ").join(self.letters[0]))
+        print(self.letters[3][0] + "     " + self.letters[1][0])  # left and right
+        print(self.letters[3][1] + "     " + self.letters[1][1])  # left and right
+        print(self.letters[3][2] + "     " + self.letters[1][2])  # left and right
+        print(" " + (" ").join(self.letters[2]))
         time.sleep(0.5)
         print("Calculating optimal solution...")
         time.sleep(1)
